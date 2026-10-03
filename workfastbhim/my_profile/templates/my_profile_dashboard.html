@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}MY WEB PORTFOLIO - WORK FAST BHIM{% endblock %}
+
+{% block header %}MY WEB PORTFOLIO{% endblock %}
+
+{% block content %}
+
+    <div class="container mt-4">
+        {% if error_message %}
+            <p style="color: red;">{{ error_message|safe }}</p>
+        {% endif %}
+        <h1 class="mt-4 mb-4">About Me</h1>
+        <p class="intro-msg">
+            Hello, I'm <strong>Mark Lister Espelimbergo Abria</strong>. This is my web profile page.
+            I'm just starting to learn web development using Python and Django.
+            I would like to improve my programming skills using this platform as a practice tool.
+            I graduated as a Computer Engineer, and I'm passionate about programming.
+            However, I have not been able to secure a job in a reputable IT company.
+            My career is currently not aligned with my educational background,
+            but I am still actively developing my knowledge in this field.
+        </p>
+
+        <h2>My Resume</h2>
+        <a href="{% static 'Profile.pdf' %}" download class="btn btn-primary">Download My Resume (PDF)</a>
+
+        <h2 class="intro-msg">Skills</h2>
+
+        <div class="container">
+            <ul class="list-group">
+                <li class="list-group-item">Web Development</li>
+                <li class="list-group-item">Python</li>
+                <li class="list-group-item">Django</li>
+                <li class="list-group-item">HTML/CSS</li>
+                <li class="list-group-item">JavaScript</li>
+                <li class="list-group-item">VB dot Net</li>
+                <li class="list-group-item">MS Excel</li>
+            </ul>
+            <img src="{% static 'holdingsomething.png' %}" alt="Image holding something" class="holding-something">
+        </div>
+
+        <h2 class="intro-msg">Contact Information</h2>
+        <p>Email: buggycode25@gmail.com</p>
+        <p>Mobile No: 09754416280</p>
+
+        <section>
+            <div>
+                <h2 class="intro-msg">Explore My Work</h2>
+                <p class="intro-msg">Explore some of the projects I've been involved in. Each project reflects my commitment and expertise in various domains.</p>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3>Project 1: ASN Sender</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text glow-text">
+                           I have developed an App Script for Google called 'ASN Sender' to streamline my work tasks.
+                           In my current job, we previously had to manually download emails with attachments, which was time-consuming.
+                           To simplify this process, I created a scripting tool that automates the search for files within my bulk emails,
+                           compresses them into zip or rar files, and then automatically sends them to my colleagues via email.
+                        </p>
+                        <div class="gallery-item">
+                            <a href="{% static 'ASNSender.jpg' %}" data-lightbox="gallery" data-title="Project 1: ASN Sender">
+                                <img src="{% static 'ASNSender.jpg' %}" alt="Project 1 Thumbnail" class="img-fluid img-thumbnail gallery-image">
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3>Project 2: ASN Downloader</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            With the ASNDownloader, a VB.NET framework-based tool I developed, managing bulk Excel files received via email has become a streamlined process.
+                            In my role, dealing with a large volume of Excel data used to be time-consuming.
+                            The ASNDownloader automates the extraction and summarization of information from these bulk Excel files,
+                            making it easy to handle and analyze the data efficiently. While it doesn't involve downloading,
+                            the tool significantly simplifies the workflow by automating the processing and summarization of data,
+                            ultimately saving time and enhancing overall efficiency in managing email-based Excel files.
+                        </p>
+
+                        <div class="gallery-item">
+                            <a href="{% static 'ASNDownloader.jpg' %}" data-lightbox="gallery" data-title="Project 2: ASN Downloader">
+                                <img src="{% static 'ASNDownloader.jpg' %}" alt="Project 2 Thumbnail" class="img-fluid img-thumbnail gallery-image">
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'lightbox2/css/lightbox.css' %}">
+    <style>
+        .gallery-image {
+            width: 200px;
+            height: auto;
+        }
+        .container {
+          position: relative;
+        }
+
+        .holding-something {
+          position: absolute;
+          top: -293px;
+          right: -365px;
+          width: 800px;
+
+        }
+
+        .intro-msg {
+          position: relative;
+          z-index: 1; /* Ensure the paragraph is in front of the image */
+        }
+    </style>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'lightbox2/js/lightbox.js' %}"></script>
+    <script>
+        lightbox.option({
+          'resizeDuration': 200,
+          'wrapAround': true
+        })
+    </script>
+{% endblock %}

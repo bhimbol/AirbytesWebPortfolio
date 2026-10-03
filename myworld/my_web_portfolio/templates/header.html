@@ -1,0 +1,45 @@
+<header>
+    <div class="container d-flex justify-content-center mt-4">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="/">My Web Portfolio</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/gallery">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/comments">Comments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About this webpage</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Work Tools
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="/send_sms">SMS</a>
+                            <a class="dropdown-item" href="/asn">ASN Tool</a>
+                            <a class="dropdown-item" href="/promo_calculator">Promo Calculator</a>
+                            <a class="dropdown-item" href="/val/?redirect_uri=https://airbytes.pythonanywhere.com/val">Update Valuations</a>
+                            <a class="dropdown-item" href="javascript:void(0);" onclick="openPopup();">Update Product Details</a>
+                            <a class="dropdown-item" href="/product_details">Product Details</a>
+                            <a class="dropdown-item" href="/loadsheet_script">Combine Invoice number'(s) in format ('T00XXXXXX','T00XXXXXX','T00XXXXXX')</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+<script>
+    function openPopup() {
+        window.open('/upload_pd', 'Upload Popup', 'width=400,height=400');
+    }
+</script>

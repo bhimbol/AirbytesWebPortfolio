@@ -1,0 +1,84 @@
+<!-- promo_calculator/templates/promo_calculator_dashboard.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}PROMO CALCULATOR - WORK FAST BHIM{% endblock %}
+
+{% block header %}PROMO CALCULATOR{% endblock %}
+
+{% block content %}
+    <div class="container-sm">
+    <table class="table">
+        <thead>
+          <tr>
+            <th colspan="2">PROMO LIST</th>
+            <th>CALCULATOR</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>CODE</td>
+                <td>DESCRIPTION</td>
+                <td rowspan="3">
+
+                    <div class="container mt-4">
+                        <form method="post" action="{% url 'promo_calculator:calculate' %}">
+                            {% csrf_token %}
+                            <label for="promo">Promo Code:</label>
+                            <input type="text" name="promo" value="{{ request.POST.promo }}" required>
+                            </br>
+                            <label for="num_of_deals">Enter Number of Deals:</label>
+                            <input type="number" name="num_of_deals" value="{{ request.POST.num_of_deals }}" required>
+                            </br>
+                            <button type="submit">Calculate</button>
+                        </form>
+
+                        {% if num_of_deals %}
+                            <table border="1">
+                                <tr>
+                                    <th>Child SKU</th>
+                                    <th>Description</th>
+                                    <th>CS</th>
+                                    <th>PCS</th>
+                                </tr>
+                                {% for result in result_list %}
+                                    <tr>
+                                        <td> {{ result.product.product_sku }} </td>
+                                        <td> {{ result.product.description }} </td>
+                                        <td> {{ result.qty_cs }} </td>
+                                        <td> {{ result.qty_pcs }} </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        {% endif %}
+                    </div>
+
+                </td>
+            </tr>
+
+            {% for promo in promos %}
+                {% ifchanged promo.promo_sku %}
+                    <tr>
+                        <td> {{ promo }} </td>
+                        <td> {{ promo.get_description }} </td>
+                    </tr>
+                {% endifchanged %}
+            {% endfor %}
+
+        </tbody>
+    </table>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+
+    </script>
+{% endblock %}

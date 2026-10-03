@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Loadsheet Script - WORK FAST BHIM{% endblock %}
+
+{% block header %}LOADSHEET SCRIPT{% endblock %}
+
+{% block content %}
+    {% load humanize %}
+	{% if total_amount %}
+		<h3>Total Invoice Amount: {{ total_amount|floatformat:2|intcomma }}</h3>
+	{% endif %}
+
+	{% if invoice_string %}
+	  <h3>Invoice Numbers:</h3>
+	  <textarea id="invoiceString" rows="10" cols="200">{{ invoice_string }}</textarea>
+	  <br>
+	  <button onclick="copyToClipboard()">Copy Invoice Numbers to Clipboard</button>
+	{% endif %}
+
+	<form method="post" action="{% url 'loadsheet_script:upload_file' %}" enctype="multipart/form-data">
+	  {% csrf_token %}
+	  <input type="file" name="excel_files" multiple accept=".xls,.xlsx">
+	  <input type="text" name="tag" placeholder="Enter tag (optional)">
+	  <button type="submit">Upload Files</button>
+	</form>
+
+    {% if messages %}
+        <div>
+            {% for message in messages %}
+            <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+                {{ message }}
+            </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            margin: 20px;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="file"],
+        input[type="text"] {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-right: 10px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .message p {
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .message p.error {
+            background-color: #ffe6e6;
+            color: #e74c3c;
+        }
+
+        .message p.success {
+            background-color: #e8f8f5;
+            color: #27ae60;
+        }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+	<script>
+	  function copyToClipboard() {
+		/* Get the text field */
+		var copyText = document.getElementById("invoiceString");
+
+		/* Select the text field */
+		copyText.select();
+		copyText.setSelectionRange(0, 99999); // For mobile devices
+
+		/* Copy the text inside the text field */
+		document.execCommand("copy");
+
+		/* Alert the copied text */
+		alert("Copied to clipboard: " + copyText.value);
+	  }
+	</script>
+{% endblock %}

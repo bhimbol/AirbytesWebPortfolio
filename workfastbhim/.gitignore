@@ -1,0 +1,11 @@
+# Ignore settings files
+# Ignore Django settings files
+**/settings.py
+**/local_settings.py
+
+config.yaml
+*.config
+
+# Ignore IDE files
+.idea/
+.vscode/

@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Gallery{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+        background-color: #f9fafb;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    h1 {
+        font-weight: 600;
+        color: #1e293b;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .gallery-card {
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+    .gallery-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .gallery-image {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+        transition: transform 0.4s ease-in-out;
+    }
+
+    .gallery-image:hover {
+        transform: scale(1.1);
+    }
+
+    .card-body {
+        padding: 1rem 1.25rem;
+    }
+
+    .card-title {
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: #111827;
+    }
+
+    .card-text {
+        color: #4b5563;
+        font-size: 0.95rem;
+    }
+
+    .comment-box {
+        margin-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1rem;
+    }
+
+    .btn-primary {
+        background-color: #2563eb;
+        border: none;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+    .btn-primary:hover {
+        background-color: #1e40af;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 2rem;
+    }
+
+    .pagination button {
+        background-color: #fff;
+        border: 1px solid #d1d5db;
+        color: #2563eb;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .pagination button:hover {
+        background-color: #2563eb;
+        color: white;
+    }
+
+    .pagination .active {
+        background-color: #2563eb;
+        color: white;
+        border-color: #2563eb;
+    }
+
+    /* Lightbox overlay */
+    .lightbox {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .lightbox img {
+        max-width: 90%;
+        max-height: 80%;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+        from {opacity: 0; transform: scale(0.9);}
+        to {opacity: 1; transform: scale(1);}
+    }
+
+    .lightbox-controls {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .lightbox button {
+        background: #ffffff33;
+        border: 1px solid #ffffff66;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-weight: 600;
+    }
+
+    .lightbox button:hover {
+        background: #ffffff55;
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: 25px;
+        right: 30px;
+        font-size: 28px;
+        color: white;
+        cursor: pointer;
+    }
+</style>
+
+<div class="container mt-4">
+    <h1>📸 Image Gallery</h1>
+
+    <div id="gallery-container" class="gallery-grid">
+        {% for image in images|dictsortreversed:"created_at" %}
+        <div class="gallery-card" data-src="{{ image.image.url }}">
+            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="gallery-image">
+            <div class="card-body">
+                <h5 class="card-title">{{ image.title }}</h5>
+                <p class="card-text">{{ image.description }}</p>
+                <small class="text-muted">{{ image.created_at|date:"M d, Y" }}</small>
+
+                <div class="comment-box">
+                    <h6>💬 Comments</h6>
+                    {% for comment in image.comment_set.all %}
+                        <div class="border rounded p-2 mb-2 bg-light">
+                            <strong>{{ comment.author }}</strong>: {{ comment.text }}
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No comments yet.</p>
+                    {% endfor %}
+
+                    <form method="post" action="{% url 'add_image_comment' image.id %}" class="mt-2">
+                        {% csrf_token %}
+                        <input type="text" name="author" placeholder="Your name" class="form-control mb-2" required>
+                        <textarea name="text" rows="2" placeholder="Write a comment..." class="form-control mb-2" required></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Post Comment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination Buttons -->
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Lightbox Modal -->
+<div class="lightbox" id="lightbox">
+    <span class="lightbox-close" id="lightbox-close">&times;</span>
+    <img id="lightbox-image" src="" alt="">
+    <div class="lightbox-controls">
+        <button id="prev-btn">⟨ Prev</button>
+        <button id="next-btn">Next ⟩</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Pagination logic
+    const cards = document.querySelectorAll(".gallery-card");
+    const perPage = 6;
+    const pagination = document.getElementById("pagination");
+    let currentPage = 1;
+    const totalPages = Math.ceil(cards.length / perPage);
+
+    function showPage(page) {
+        const start = (page - 1) * perPage;
+        const end = start + perPage;
+
+        cards.forEach((card, i) => {
+            card.style.display = i >= start && i < end ? "block" : "none";
+        });
+
+        pagination.innerHTML = "";
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.textContent = i;
+            if (i === page) btn.classList.add("active");
+            btn.addEventListener("click", () => {
+                currentPage = i;
+                showPage(i);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+            pagination.appendChild(btn);
+        }
+    }
+    showPage(currentPage);
+
+    // Lightbox logic
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightbox-image");
+    const closeBtn = document.getElementById("lightbox-close");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    let currentIndex = 0;
+
+    function openLightbox(index) {
+        lightbox.style.display = "flex";
+        currentIndex = index;
+        lightboxImage.src = cards[currentIndex].getAttribute("data-src");
+    }
+
+    function closeLightbox() {
+        lightbox.style.display = "none";
+    }
+
+    function showNext() {
+        currentIndex = (currentIndex + 1) % cards.length;
+        lightboxImage.src = cards[currentIndex].getAttribute("data-src");
+    }
+
+    function showPrev() {
+        currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+        lightboxImage.src = cards[currentIndex].getAttribute("data-src");
+    }
+
+    cards.forEach((card, i) => {
+        card.addEventListener("click", () => openLightbox(i));
+    });
+
+    closeBtn.addEventListener("click", closeLightbox);
+    nextBtn.addEventListener("click", showNext);
+    prevBtn.addEventListener("click", showPrev);
+
+    lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) closeLightbox();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowRight") showNext();
+        if (e.key === "ArrowLeft") showPrev();
+    });
+});
+</script>
+{% endblock %}

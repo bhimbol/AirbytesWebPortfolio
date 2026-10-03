@@ -1,0 +1,236 @@
+<!-- asn_manager/templates/asn_manager_dashboard.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Product Manager - WORK FAST BHIM{% endblock %}
+
+{% block header %}PRODUCT MANAGER{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <p>Products Logs:</p>
+        <ul>
+            <li>{{ created_product_count }} products created</li>
+            <li>{{ updated_product_count }} products updated</li>
+            <ul>
+                {% for p in updated_product %}
+                    <li>{{ p.product_sku }}-{{ p.description }}&nbsp;&nbsp;{{ p.bcpcs }}</li>
+                {% endfor %}
+            </ul>
+        </ul>
+
+        <p>Valuations Logs:</p>
+        <ul>
+            <li>{{ deleted_valuation_entry }} valuation entries deleted</li>
+            <li>{{ newly_added_valuation_entry }} valuation entries added</li>
+        </ul>
+        <p>Missing Valuations in Product List:</p>
+        <ul>
+            {% for valuation in missing_valuations %}
+                <p>{{ valuation.product_sku }} => ({{ valuation.cs }}-{{ valuation.ib }}-{{ valuation.pcs }}) is not available in Product data.</p>
+            {% endfor %}
+        </ul>
+
+        <p>Count Logs:</p>
+        <ul>
+            <li>{{ deleted_count_entry }} count entries deleted</li>
+            <li>{{ newly_added_count_entry }} count entries added</li>
+        </ul>
+        <p>Missing Count in Product List:</p>
+        <ul>
+            {% for count in missing_counts %}
+                <p>{{ count.product_sku }} => ({{ count.cs }}-{{ count.ib }}-{{ count.pcs }}) is not available in Product data.</p>
+            {% endfor %}
+        </ul>
+
+        <p>Undelivered Logs:</p>
+        <ul>
+            <li>{{ deleted_undelivered_entry }} undelivered entries deleted</li>
+            <li>{{ newly_added_undelivered_entry }} undelivered entries added</li>
+        </ul>
+        <ul>
+            <p>Missing Undelivered in Product List:</p>
+            {% for undelivered in missing_undelivered %}
+                <p>{{ undelivered.product_sku }} => ({{ undelivered.cs }}-{{ undelivered.ib }}-{{ undelivered.pcs }}) is not available in Product data.</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="container mt-4">
+        {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+            </div>
+        {% else %}
+            <form method="post" action="{% url 'product_manager:update_file' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="fileProductDetails">Upload Excel File Product Details (.xls):</label>
+                <input type="file" id="fileProductDetails" name="fileProductDetails" accept=".xls">
+                </br>
+                <p>Format: (Stock Code-Description-ConversionFactor-BCCS-BCIB-BCPCS)</p>
+                </br>
+                </br>
+
+                <label for="fileCount">Upload Excel File Count (.xls):</label>
+                <input type="file" id="fileCount" name="fileCount" accept=".xls">
+                </br>
+                <p>Format: (StockCode-Description-CS-IB-PCS)</p>
+                </br>
+                </br>
+
+                <label for="fileValuation">Upload Excel File Valuation (.xls):</label>
+                <input type="file" id="fileValuation" name="fileValuation" accept=".xls">
+                </br>
+                <p>Format: (StockCode-Description-CS-IB-PCS)</p>
+                </br>
+                </br>
+
+                <label "fileundelivered">Upload Excel File Undelivered (.xls):</label>
+                <input type="file" id="fileUndelivered" name="fileUndelivered" accept=".xls">
+                </br>
+                <p>Format: (Stockcode-Description-CS-IB-PCS)</p>
+                </br>
+                </br>
+                <input type="hidden" name="xcode" value="641524">
+                <button type="submit">Update Product Details / Valuations</button>
+            </form>
+            </br>
+            </br>
+            </br>
+            <!--
+            <form method="post" action="{% url 'product_manager:product_manager_dashboard' %}">
+                {% csrf_token %}
+                <label for="search_subject">Search Subject:</label>
+                <input type="text" name="search_subject" id="searchInput" oninput="filterMessages()">
+                <button type="submit" style="display: none;">Search</button>
+            </form>
+            -->
+            <div class="table-responsive">
+                <table id="sortableTable" class="table table-bordered table-striped custom-table" >
+                    <thead class="thead-dark">
+                        <tr>
+                            <th class="p-2">SKU</th>
+                            <th class="p-2">DESCRIPTION</th>
+                            <th class="p-2 bg-warning">BARCODE IN PCS</th>
+                            <th class="p-2">QTY PCS/CS</th>
+                            <th class="p-2 bg-warning">Valuation(cs-ib-pcs)</th>
+                            <th class="p-2 bg-warning">Badstock(cs-ib-pcs)</th>
+                            <th class="p-2 bg-warning">Undelivered(cs-ib-pcs)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list">
+                        {% for product in products_list %}
+                            {% if product.product_sku|length >= 5 %}
+                                <tr class="product_row">
+                                    <td class="p-2">{{ product.product_sku }}</td>
+                                    <td class="p-2">{{ product.description }}</td>
+                                    <td class="p-2">{{ product.bcpcs }}</td>
+                                    <td class="p-2">{{ product.qtyperpcs }}</td>
+                                    <td class="p-2">({{product.cs_ib_pcs}})</td>
+                                    <td class="p-2">({{product.badstock}})</td>
+                                    <td class="p-2">({{product.undelivered}})</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        </br>
+        <div><a href="{% url 'product_manager:export_poduct_details' %}">Export Product Details</a></div>
+        <div><a href="{% url 'product_manager:export_recon' %}">Export Reconcilation</a></div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <style>
+        /* Add your custom styles here */
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+        }
+
+        .table-bordered {
+            border: 5px solid #dee2e6;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f8f9fa;
+        }
+
+        .custom-table th,
+        .custom-table td {
+            text-align: center;
+        }
+
+        .bg-warning {
+            background-color: #ffc107;
+        }
+
+        .p-2 {
+            padding: 0.5rem;
+        }
+
+        /* Add more custom styles as needed */
+
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready( function () {
+            $('#sortableTable').DataTable();
+        });
+    </script>
+    <!--
+    <script>
+        function filterMessages() {
+            var searchInput = document.getElementById('searchInput');
+            var rows = document.getElementsByClassName('product_row');
+            var searchTerm = searchInput.value.toLowerCase();
+
+            for (var i = 0; i < rows.length; i++) {
+                var textContent = rows[i].textContent.toLowerCase();
+
+                if (textContent.includes(searchTerm)) {
+                    rows[i].style.display = 'table-row'; // Display the row
+                } else {
+                    rows[i].style.display = 'none'; // Hide the row
+                }
+            }
+        }
+    </script>
+    -->
+{% endblock %}

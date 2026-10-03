@@ -1,0 +1,276 @@
+<!-- asn_manager/templates/checklist.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}ASN Manager - WORK FAST BHIM{% endblock %}
+
+{% block header %}CHECK LIST{% endblock %}
+
+{% block content %}
+
+<h1>Checklist</h1>
+<label>
+    <input type="checkbox" id="loadInputsCheckbox" checked> Load saved inputs
+</label>
+<button id="resetButton" class="btn reset-btn">Reset</button>
+<input type="text" id="searchInput" placeholder="Search for codes or descriptions..">
+<div class="table-responsive">
+    <table id="checklistTable">
+        <thead>
+            <tr>
+                <th>Code:</th>
+                <th>Description: </th>
+                <th>Batch Code: </th>
+                <th>BIN</th>
+                <th>System Count</th>
+                <th>Actual Count</th>
+                <th>Action</th>
+                <th>History Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in combined_list %}
+                {% if item.qty > 0 %}
+                    <tr>
+                        <td data-label="Code" class="center begp"  style="font-size: 18px; font-weight: bold;">{{ item.code }}</td>
+                        <td data-label="Description" class="center" style="font-size: 18px; font-weight: bold;">{{ item.description }}</td>
+                        <td data-label="Batch Code" class="center" style="font-size: 18px; font-weight: bold;">{{ item.bcode }}</td>
+                        <td data-label="Bin">
+                            <input type="text" class="textbox-bin" placeholder="BIN" style="font-size: 18px; font-weight: bold;">
+                        </td>
+                        <td data-label="System Count" class="center system-count" style="font-size: 18px; font-weight: bold;">{{ item.qty }}</td>
+                        <td data-label="Actual Count" class="center actual-count" style="font-size: 18px; font-weight: bold;">0</td>
+                        <td data-label="Action">
+                            <input type="number" class="textbox" placeholder="Enter value">
+                            <button class="btn" onclick="updateCount(this)">Submit</button>
+                        </td>
+                        <td data-label="history-count" class="history-count endp"></td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    th {
+        background-color: #f2f2f2;
+        text-align: left;
+    }
+    .center {
+        text-align: center;
+    }
+    .textbox {
+        width: 60%;
+        box-sizing: border-box;
+    }
+    .btn {
+        padding: 8px 16px;
+        margin-left: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    .btn:hover {
+        background-color: #45a049;
+    }
+    #searchInput {
+        margin-bottom: 10px;
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    @media (max-width: 768px) {
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+        thead tr {
+            display: none;
+        }
+        tr {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        td {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border: none;
+            border-bottom: 1px solid #ddd;
+            position: relative;
+        }
+        td:before {
+            content: attr(data-label);
+            flex-basis: 50%;
+            text-align: left;
+            font-weight: bold;
+        }
+        .textbox {
+            width: calc(100% - 90px);  /* Adjust width for button */
+        }
+        .btn {
+            width: 80px;
+            margin-left: 5px;
+        }
+        td:last-child {
+            display: flex;
+            align-items: center;
+            background-color: #ffd4da;
+        }
+        .begp {
+            display: flex;
+            align-items: center;
+            background-color: #d4ffda;
+        }
+    }
+
+    .highlight td {
+        background-color: #d4edda !important;
+    }
+
+    .reset-btn {
+        margin-bottom: 10px;
+        background-color: #f44336;
+    }
+    .reset-btn:hover {
+        background-color: #d32f2f;
+    }
+
+</style>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
+<script>
+    $(document).ready(function() {
+        var table = $('#checklistTable').DataTable({
+            "paging": false,
+            "info": false,
+            "dom": 'lrtip'
+        });
+
+        $('#searchInput').on('keyup', function() {
+            table.search(this.value).draw();
+        });
+
+        if ($('#loadInputsCheckbox').is(':checked')) {
+            loadInputs();
+        }
+
+        $('#loadInputsCheckbox').on('change', function() {
+            if (this.checked) {
+                loadInputs();
+            } else {
+                resetInputs();
+            }
+        });
+
+        // Save inputs when they change
+        $('.textbox-bin, .textbox').on('input', saveInputs);
+
+        $('#resetButton').on('click', resetInputs);
+
+    });
+
+    function saveInputs() {
+        $('#checklistTable tbody tr').each(function(index, row) {
+            var binInput = $(row).find('.textbox-bin').val();
+            var actualCount = $(row).find('.actual-count').text();
+            var historyCount = $(row).find('.history-count').text();
+
+            localStorage.setItem('binInput' + index, binInput);
+            localStorage.setItem('actualCount' + index, actualCount);
+            localStorage.setItem('historyCount' + index, historyCount);
+        });
+    }
+
+    function loadInputs() {
+        $('#checklistTable tbody tr').each(function(index, row) {
+            var binInput = localStorage.getItem('binInput' + index);
+            var actualCount = localStorage.getItem('actualCount' + index);
+            var historyCount = localStorage.getItem('historyCount' + index);
+            var systemCount = parseFloat($(row).find('.system-count').text());
+
+            if (binInput !== null) {
+                $(row).find('.textbox-bin').val(binInput);
+            }
+            if (actualCount !== null) {
+                $(row).find('.actual-count').text(actualCount);
+            }
+            if (historyCount !== null) {
+                $(row).find('.history-count').text(historyCount);
+            }
+
+            var currentActualCount = parseFloat($(row).find('.actual-count').text());
+            if (currentActualCount === systemCount) {
+                $(row).find('td').css('background-color', '#d4edda');
+            } else {
+                $(row).find('td').css('background-color', '');
+            }
+        });
+    }
+
+    function updateCount(button) {
+        var row = button.closest('tr');
+        var textbox = row.querySelector('.textbox');
+        var actualCountCell = row.querySelector('.actual-count');
+        var systemCountCell = row.querySelector('.system-count');
+        var hcount = row.querySelector('.history-count');
+
+        var currentCount = parseFloat(actualCountCell.innerText);
+        var addedCount = parseFloat(textbox.value);
+        var systemCount = parseFloat(systemCountCell.innerText);
+
+        if (!isNaN(addedCount)) {
+            var newCount = currentCount + addedCount;
+            actualCountCell.innerText = newCount;
+            hcount.innerText = `${hcount.innerText}${' ; '}${addedCount}`;
+            textbox.value = '';  // Clear the text box
+
+            if (newCount === systemCount) {
+                row.querySelectorAll('td').forEach(td => td.style.backgroundColor = '#d4edda');
+            } else {
+                row.querySelectorAll('td').forEach(td => td.style.backgroundColor = '');
+            }
+
+            saveInputs();  // Save updated inputs to localStorage
+        } else {
+            alert("Please enter a valid number.");
+        }
+    }
+
+    function resetInputs() {
+        // Clear localStorage
+        localStorage.clear();
+
+        // Clear input fields and reset table
+        $('#checklistTable tbody tr').each(function(index, row) {
+            $(row).find('.textbox-bin').val('');
+            $(row).find('.actual-count').text('0');
+            $(row).find('.history-count').text('');
+            $(row).find('.textbox').val('');
+            row.querySelectorAll('td').forEach(td => td.style.backgroundColor = '');
+        });
+    }
+</script>
+{% endblock %}
+

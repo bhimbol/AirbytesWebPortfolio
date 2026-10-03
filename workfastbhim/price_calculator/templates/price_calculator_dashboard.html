@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Calculator Dashboard</title>
+    <style>
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        #added-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        #added-items-table th,
+        #added-items-table td {
+            border: 1px solid #4CAF50; /* green border */
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap; /* Prevent wrapping */
+        }
+
+        #added-items-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        /* Input fields inside table */
+        .cs-input, .ib-input, .pcs-input {
+            width: 40px;
+            text-align: center;
+        }
+
+        /* Hide suggestions box initially */
+        .suggestions.hidden {
+            display: none;
+        }
+        /* Make all fonts small */
+        body {
+            font-size: 8px; /* adjust number for desired size */
+        }
+
+        /* Optional: make headings smaller too */
+        h1, h2, h3, h4, h5, h6 {
+            font-size: 8px; /* keep headings same size as body */
+        }
+
+        .suggestions {
+            border: 1px solid #ccc;
+            background: white;
+            max-height: 150px;     /* height limit */
+            overflow-y: auto;      /* vertical scroll */
+            overflow-x: hidden;    /* no horizontal scroll */
+            position: absolute;
+            width: 120px;          /* optional, match search box */
+            z-index: 1000;
+        }
+
+        /* each suggestion item */
+        .suggestions div {
+            padding: 4px;
+            cursor: pointer;
+        }
+
+        /* hover effect */
+        .suggestions div:hover {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body>
+    <h4>Price Calculator Dashboard</h4>
+    <label for="search">Search SKU:</label>
+    </br>
+    <input type="text" id="search" name="search" size="8" maxlength="8" autocomplete="off" placeholder="Stock Code">
+    <div id="suggestions" class="suggestions hidden"></div>
+    <button id="add-item-button" class="addBtn">Add Item</button>
+
+    <div id="result" class="hidden">
+        </br>
+        STOCK_CODE: <span style="color: green; font-size: 8px;" id="selected_stock_code"></span>
+        DESCRIPTION: <span style="color: green; font-size: 8px;" id="selected_description"></span>
+        </br>
+        PRICE_PER_PCS: <span style="color: green; font-size: 8px;" id="selected_price"></span>
+    </div>
+    </br>
+    <div class="table-wrapper">
+        <table id="added-items-table">
+            <thead>
+                <tr>
+                    <th>ITEM DETAILS (CODE # DESCRIPTION # PRICE)</th>
+                    <th>QUANTITY</th>
+                    <th>AMOUNT</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <strong>Total Amount: </strong>
+        <span id="total-amount-display" class="total-amount-display-class">0.00</span>
+        <br>
+        <button id="calculate-total-btn" class="calculate-total">Calculate Total</button>
+    </div>
+
+    <script>
+        const data = {{ items|safe }}; // Pass the items list to JavaScript
+
+        const searchInput = document.getElementById('search');
+        const suggestionsDiv = document.getElementById('suggestions');
+        const resultDiv = document.getElementById('result');
+
+        const stockCodeElement = document.getElementById('selected_stock_code');
+        const descriptionElement = document.getElementById('selected_description');
+        const priceElement = document.getElementById('selected_price');
+
+        const addItemButton = document.getElementById('add-item-button');
+        const addedItemsTable = document.getElementById('added-items-table').querySelector('tbody');
+
+        // Show suggestions while typing
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            suggestionsDiv.innerHTML = '';
+
+            if (query === '') {
+                suggestionsDiv.classList.add('hidden');
+                return;
+            }
+
+            const matches = data.filter(item =>
+                item.STOCK_CODE &&
+                String(item.STOCK_CODE).toLowerCase().includes(query)
+            );
+
+            if (matches.length > 0) {
+                suggestionsDiv.classList.remove('hidden');
+                matches.forEach(match => {
+                    const div = document.createElement('div');
+                    div.textContent = match.STOCK_CODE;
+                    div.dataset.description = match.DESCRIPTION || 'N/A';
+                    div.dataset.price = match.PRICE_PER_PCS || 'N/A';
+
+                    div.addEventListener('click', function () {
+                        stockCodeElement.textContent = match.STOCK_CODE;
+                        descriptionElement.textContent = div.dataset.description;
+                        priceElement.textContent = parseFloat(div.dataset.price).toFixed(2);
+                        resultDiv.classList.remove('hidden');
+                        suggestionsDiv.classList.add('hidden');
+                        searchInput.value = match.STOCK_CODE;
+                    });
+
+                    suggestionsDiv.appendChild(div);
+                });
+            } else {
+                suggestionsDiv.classList.add('hidden');
+            }
+        });
+
+        searchInput.addEventListener('click', function () {
+            this.select();
+        });
+
+        // Add selected item to table
+        addItemButton.addEventListener('click', function () {
+            const stockCode = stockCodeElement.textContent;
+            const description = descriptionElement.textContent;
+            const price = parseFloat(priceElement.textContent);
+            const itemData = data.find(item => String(item.STOCK_CODE) === String(stockCode)) || {};
+            const pcs1cs = parseFloat(itemData.PCS_1CS || 0);
+            const pcs1ib = parseFloat(itemData.PCS_1IB || 0);
+
+            if (!stockCode) {
+                alert('Please select an item before adding.');
+                return;
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${stockCode} # ${description} # ${price.toFixed(2)}</td>
+                <td>
+                    <span>cs </span><input type="number" class="cs-input" data-pcs1cs="${pcs1cs}" data-price="${price}" value="0" />
+                    <span>ib </span><input type="number" class="ib-input" data-pcs1ib="${pcs1ib}" data-price="${price}" value="0" />
+                    <span>pcs </span><input type="number" class="pcs-input" data-price="${price}" value="0" />
+                </td>
+                <td class="amount-cell">0.00</td>
+                <td><button class="remove-btn">X</button></td>
+            `;
+
+            addedItemsTable.appendChild(row);
+
+            const csInput = row.querySelector('.cs-input');
+            const ibInput = row.querySelector('.ib-input');
+            const pcsInput = row.querySelector('.pcs-input');
+            const amountCell = row.querySelector('.amount-cell');
+            const removeButton = row.querySelector('.remove-btn');
+
+            const calculateAmount = () => {
+                const cs = parseFloat(csInput.value) || 0;
+                const ib = parseFloat(ibInput.value) || 0;
+                const pcs = parseFloat(pcsInput.value) || 0;
+                const price = parseFloat(csInput.dataset.price) || 0;
+                const pcs1cs = parseFloat(csInput.dataset.pcs1cs) || 0;
+                const pcs1ib = parseFloat(ibInput.dataset.pcs1ib) || 0;
+
+                const amount = (cs * pcs1cs + ib * pcs1ib + pcs) * price;
+                amountCell.textContent = amount.toFixed(2);
+            };
+
+            [csInput, ibInput, pcsInput].forEach(input => {
+                input.addEventListener('click', function () {
+                    this.select();
+                });
+            });
+
+            csInput.addEventListener('input', calculateAmount);
+            ibInput.addEventListener('input', calculateAmount);
+            pcsInput.addEventListener('input', calculateAmount);
+
+            removeButton.addEventListener('click', function () {
+                row.remove();
+                calculateTotal();
+            });
+
+            stockCodeElement.textContent = '';
+            descriptionElement.textContent = '';
+            priceElement.textContent = '';
+            resultDiv.classList.add('hidden');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!suggestionsDiv.contains(e.target) && e.target !== searchInput) {
+                suggestionsDiv.classList.add('hidden');
+            }
+        });
+
+        const calculateTotalBtn = document.getElementById('calculate-total-btn');
+        const totalAmountDisplay = document.getElementById('total-amount-display');
+
+        const calculateTotal = () => {
+            let totalAmount = 0;
+            const rows = addedItemsTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                const amount = parseFloat(row.querySelector('.amount-cell').textContent) || 0;
+                totalAmount += amount;
+            });
+            totalAmountDisplay.textContent = totalAmount.toFixed(2);
+        };
+
+        calculateTotalBtn.addEventListener('click', calculateTotal);
+
+
+
+    </script>
+
+</body>
+</html>

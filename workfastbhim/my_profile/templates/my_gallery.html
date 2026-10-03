@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}GALLERY - WORK FAST BHIM{% endblock %}
+{% block header %}GALLERY{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4 stylish-title">📸 Our Gallery</h1>
+    <div class="row" id="gallery-container">
+        {% for image in images|dictsortreversed:"created_at" %}
+            <div class="col-md-4 mb-4 gallery-item">
+                <div class="card shadow-lg border-0 rounded-4 gallery-card">
+                    <div class="gallery-thumbnail">
+                        <a href="{{ image.image.url }}" data-lightbox="gallery" data-title="{{ image.title }}">
+                            <img src="{{ image.image.url }}" alt="{{ image.title }}" class="img-fluid rounded-top gallery-image">
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="fw-bold text-primary">{{ image.title }}</h5>
+                        <p class="text-muted small mb-1">{{ image.created_at|date:"M d, Y" }}</p>
+                        <p class="card-text" style="max-height: 120px; overflow-y: auto;">{{ image.description }}</p>
+
+                        <hr>
+                        <h6 class="fw-semibold">Comments</h6>
+                        <div class="comment-container mb-2" style="max-height: 150px; overflow-y: auto;">
+                            {% for comment in image.comment_set.all %}
+                                <div class="p-2 rounded comment-box mb-1">
+                                    <strong>{{ comment.author }}</strong>
+                                    <p class="mb-0">{{ comment.text }}</p>
+                                </div>
+                            {% empty %}
+                                <p class="text-muted small">No comments yet.</p>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary toggle-comment mb-2">💬 Show/Hide Comments</button>
+
+                        <form method="post" action="{% url 'my_profile:add_image_comment' image.id %}" class="comment-form">
+                            {% csrf_token %}
+                            <input type="text" name="author" placeholder="Your Name" required class="form-control form-control-sm mb-2">
+                            <textarea name="text" placeholder="Write a comment..." required class="form-control form-control-sm mb-2"></textarea>
+                            <button type="submit" class="btn btn-sm btn-primary w-100">Add Comment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Frontend Pagination -->
+    <div class="text-center mt-4">
+        <button id="prevPage" class="btn btn-outline-secondary btn-sm me-2">⬅ Prev</button>
+        <button id="nextPage" class="btn btn-outline-secondary btn-sm">Next ➡</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'lightbox2/css/lightbox.css' %}">
+<style>
+    body {
+        background-color: #f9fafb;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .stylish-title {
+        font-weight: 700;
+        color: #0077b6;
+        letter-spacing: 2px;
+    }
+
+    .gallery-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+    }
+
+    .gallery-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+    }
+
+    .gallery-thumbnail {
+        overflow: hidden;
+        height: 250px;
+    }
+
+    .gallery-thumbnail img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.4s ease-in-out;
+    }
+
+    .gallery-thumbnail img:hover {
+        transform: scale(1.1);
+    }
+
+    .comment-box {
+        background-color: #f1f3f5;
+        border-left: 3px solid #0077b6;
+    }
+
+    /* Pagination */
+    #prevPage, #nextPage {
+        border-radius: 20px;
+        transition: all 0.3s;
+    }
+
+    #prevPage:hover, #nextPage:hover {
+        background-color: #0077b6;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'lightbox2/js/lightbox.js' %}"></script>
+<script>
+    $(document).ready(function(){
+        $('.toggle-comment').on('click', function(){
+            $(this).siblings('.comment-container').slideToggle(200);
+        });
+    });
+
+    // Simple frontend pagination
+    const itemsPerPage = 6;
+    let currentPage = 1;
+    const items = $('.gallery-item');
+
+    function showPage(page) {
+        items.hide();
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        items.slice(start, end).fadeIn(300);
+    }
+
+    $('#nextPage').on('click', function() {
+        if (currentPage * itemsPerPage < items.length) {
+            currentPage++;
+            showPage(currentPage);
+        }
+    });
+
+    $('#prevPage').on('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            showPage(currentPage);
+        }
+    });
+
+    showPage(currentPage);
+
+    lightbox.option({
+      'resizeDuration': 100,
+      'wrapAround': true
+    });
+</script>
+{% endblock %}
