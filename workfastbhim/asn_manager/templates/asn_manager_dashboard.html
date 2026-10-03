@@ -1,0 +1,232 @@
+<!-- asn_manager/templates/asn_manager_dashboard.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}ASN Manager - WORK FAST BHIM{% endblock %}
+
+{% block header %}ASN MANAGER{% endblock %}
+
+{% block content %}
+    <div class="container-md">
+        <section class="features">
+            <div class="container-sm">
+                This tool here is used to download ASN files (.xls, .dat)
+                and automatically consolidate it in a single excel file for printing and checking.
+                You can use filtered searches for faster viewing and download.
+            </div>
+
+            <h1>View ASN Messages</h1>
+            {% if request.session.google_authenticated %}
+                <div  class="container-sm">
+                    <h2>Session</h2>
+                    <a href="{% url 'asn_manager:logout' %}">Logout Session</a>
+                </div>
+                <div  class="container-sm">
+                    <h2>Filter</h2>
+                    <form action="{% url 'asn_manager:view_asn_list' %}" method="POST">
+                         {% csrf_token %}
+                        <label for="branch">Branch:</label>
+                        <select name="branch" id="branch">
+                            <option value="FDC-Borongan, PO#:" {% if branch == 'FDC-Borongan, PO#:' %}selected{% endif %}>FDC Borongan</option>
+                            <option value="FDC-Calbayog, PO#:" {% if branch == 'FDC-Calbayog, PO#:' %}selected{% endif %}>FDC Calbayog</option>
+                            <option value="FDC-Catarman, PO#:" {% if branch == 'FDC-Catarman, PO#:' %}selected{% endif %}>FDC Catarman</option>
+                        </select>
+
+                        <label for="rdd">Requested Delivery Date:</label>
+                        <input type="date" name="rdd" id="rdd" value="{{ rdd|default:'1991-01-25' }}">
+
+                        <label for="sender">Sender:</label>
+                        <input type="text" name="sender" id="sender" value="{{ sender|default:'kmgflores@fastgroup.biz' }}">
+
+                        <button type="submit">VIEW ASN</button>
+                    </form>
+                </div>
+                <div class="container-sm">
+                    <h2>Messages</h2>
+                    {% if messages %}
+                        <form method="post" action="{% url 'asn_manager:asn_manager_dashboard' %}">
+                            {% csrf_token %}
+                            <label for="search_subject">Search Subject:</label>
+                            <input type="text" name="search_subject" id="search_subject" oninput="filterMessages()">
+                            <button type="submit" style="display: none;">Search</button>
+                        </form>
+                        <form method="post" action="{% url 'asn_manager:download_selected_asn_list' %}">
+                            {% csrf_token %}
+                            <button type="button" id="checkAll">Check All</button>
+                            <button type="button" id="uncheckAll">Uncheck All</button>
+                            <br>
+
+                            <div class="container-sm" style="display: flex; justify-content: space-between; align-items: left;">
+                                <div style="text-align: left;">
+                                    <h5 style="margin: 0;">Selected ASN Count:</h5>
+                                </div>
+                                <div style="text-align: center;">
+                                    <span id="selectedCount" style="margin: 0;">0</span>
+                                </div>
+                            </div>
+
+                            <hr>
+                            <div id="messagesContainer">
+                                {% for message in messages %}
+                                    <div class="message-container" data-subject="{{ message.subject|lower }}">
+                                        <input type="checkbox" name="selected_messages" class="message-checkbox" value="{{ message }}">
+                                        <strong>Subject:</strong> {{ message.subject }}<br>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <label>Include .dat files? (if ckecked, it will download both .xls and .dat file)</label>
+                            <input type="checkbox" name="include_dat" checked="checked">
+                            <button type="submit">Download Selected ASN</button>
+                        </form>
+                    {%endif%}
+                </div>
+            {% else %}
+                <div  class="container-sm">
+                    <h2>Session</h2>
+                    <a href="{% url 'asn_manager:initiate_google_auth' %}">Login Session</a>
+                    <p>Login with the email where your ASN emails are saved.</p>
+                </div>
+            {% endif %}
+            <hr>
+            <div  class="container-sm">
+                <h2>Session Debug</h2>
+                {%if request.session%}
+                    <p>request.session: {{request.session}}</p>
+                    <p>request.session.user_info: {{request.session.user_info}}</p>
+                    <p>request.session.google_credentials: {{request.session.google_credentials}}</p>
+                    <p>request.session.google_authenticated: {{request.session.google_authenticated}}</p>
+                    <p>request.session.message_count: {{request.session.message_count}}</p>
+                {%else%}
+                    <p>No data in session</p>
+                {%endif%}
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<!--
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .hero {
+            background-color: #3498db;
+            color: #fff;
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 50px 0;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .feature:hover {
+            transform: scale(1.05);
+        }
+
+        .feature i {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+
+        .feature h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .feature p {
+            font-size: 1em;
+            color: #666;
+        }
+
+        .view-asn, .session, .debug {
+            margin: 50px 0;
+        }
+    </style>
+-->
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.getElementById('checkAll').addEventListener('click', function () {
+            var checkboxes = document.querySelectorAll('.message-checkbox');
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = true;
+            });
+            updateSelectedCount();
+        });
+
+        document.getElementById('uncheckAll').addEventListener('click', function () {
+            var checkboxes = document.querySelectorAll('.message-checkbox');
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = false;
+            });
+            updateSelectedCount();
+        });
+
+        function filterMessages() {
+            var searchInput = document.getElementById('search_subject');
+            var messagesContainer = document.getElementById('messagesContainer');
+            var searchTerm = searchInput.value.toLowerCase();
+
+            var messageContainers = messagesContainer.getElementsByClassName('message-container');
+
+            for (var i = 0; i < messageContainers.length; i++) {
+                var subject = messageContainers[i].getAttribute('data-subject');
+
+                if (subject.includes(searchTerm)) {
+                    messageContainers[i].style.display = 'block';
+                } else {
+                    messageContainers[i].style.display = 'none';
+                }
+            }
+        }
+
+        function updateSelectedCount() {
+            var selectedCount = document.querySelectorAll('.message-checkbox:checked').length;
+            document.getElementById('selectedCount').textContent = selectedCount;
+        }
+
+        var checkboxes = document.querySelectorAll('.message-checkbox');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.addEventListener('click', updateSelectedCount);
+        });
+    </script>
+{% endblock %}

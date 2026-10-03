@@ -1,7 +1,59 @@
-dev_apps/*
-myworld/*
-vpn/*
-workfastbhim/*
+# =========================
+# Python cache
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
 
-!.gitkeep
+# =========================
+# Virtual environments
+# =========================
+.venv/
+venv/
+env/
+.virtualenvs/
 
+# =========================
+# Django
+# =========================
+*.sqlite3
+media/
+staticfiles/
+
+# =========================
+# Secrets / environment
+# =========================
+.env
+.env.*
+!.env.example
+
+credentials.json
+token.json
+client_secret*.json
+
+# =========================
+# PythonAnywhere / Linux user files
+# =========================
+.bash_history
+.bashrc
+.gitconfig
+.ipython/
+.local/
+.profile
+.python_history
+.pythonstartup.py
+.ssh/
+.viminfo
+.vimrc
+.cache/
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Logs
+# =========================
+*.log

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Send SMS{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mt-4 mb-4">SMS</h1>
+        <h2>Send SMS to this number +16509008240 (US)</h2>
+        <br>
+        <ul>
+            {% for sms in sms_messages %}
+                <li>
+                    <strong>Sender:</strong> {{ sms.sender_number }}<br>
+                    <strong>Twilio Number:</strong> {{ sms.twilio_number }}<br>
+                    <strong>Message Body:</strong> {{ sms.message_body }}<br>
+                    <strong>Message SID:</strong> {{ sms.message_sid }}<br>
+                    <strong>Number of Media:</strong> {{ sms.num_media }}<br>
+                    <hr>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <h2 class="mt-4">Send a text message</h2>
+        {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+                <br>Twilio Account is in trial period, admin should purchase for an upgrade.
+            </div>
+        {% endif %}
+        <form method="post" action="{% url 'sms:send_sms' %}" class="mt-3">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="recipient_number">Recipient Number:</label>
+                <input type="text" name="recipient_number" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="message_body">Message Body:</label>
+                <textarea name="message_body" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+    </div>
+{% endblock %}

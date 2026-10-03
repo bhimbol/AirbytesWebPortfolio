@@ -1,0 +1,60 @@
+body {
+    font-family: Arial, sans-serif;
+    background-image: url('bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+header {
+    background-color: #0074cc;
+    color: #fff;
+    padding: 20px;
+}
+
+.container {
+    animation: glow 2s infinite alternate; /* Add glow animation */
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Initial glow effect */
+    }
+    to {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 1); /* Final glow effect */
+    }
+}
+
+h1 {
+    font-size: 28px;
+}
+
+p {
+    font-size: 18px;
+}
+
+ul.menu {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+ul.menu li {
+    display: inline;
+    margin-right: 20px;
+}
+
+ul.menu li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: bold;
+}
+
+.big-underline {
+    text-decoration: underline;
+    font-size: 2em;
+    color: #000;
+}

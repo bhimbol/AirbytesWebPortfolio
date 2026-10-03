@@ -1,0 +1,65 @@
+<!-- asn_manager/templates/download_selected_asn_list.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}ASN Manager - WORK FAST BHIM{% endblock %}
+
+{% block header %}ASN MANAGER{% endblock %}
+
+{% block content %}
+    <p>
+        Successfully Downloaded ASN Files.
+        <a href="{% url 'asn_manager:consolidate_asn' %}">Generate ASN Files(.xls)</a>.
+    </p>
+    <p>
+        Proceed to =>
+        <a href="{% url 'asn_manager:checklist' %}">Checking</a>.
+    </p>
+
+{% if messages %}
+    <ul>
+        <table>
+                {% for message in messages %}
+                    <tr>
+                        <td><li><strong>Subject:</strong> {{ message.subject }}</li></td>
+                        <td align="right"><strong>{{ message.message_dq }} CS</strong></td>
+                    </tr>
+                {% endfor %}
+        </table>
+    </ul>
+    <ul>
+        <li>{{ messages|length }} ASN</li>
+        <li>Total Delivery Quantity: {{ total_delivery_quantity }} CS</li>
+    </ul>
+{% else %}
+<p>No messages found.</p>
+{% endif %}
+
+<p>
+    <a href="{% url 'asn_manager:asn_manager_dashboard' %}">Back to dashboard</a>.
+</p>
+
+{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Parse the JSON string passed from the Django view
+    var selectedMessages = JSON.parse('{{ selected_messages_json|escapejs }}');
+
+    // Now 'selectedMessages' is a JavaScript variable containing your messages as an array
+    console.log(selectedMessages);
+
+    // You can loop through 'selectedMessages' and access properties like 'id', 'subject', 'data', etc.
+    for (var i = 0; i < selectedMessages.length; i++) {
+        var message = selectedMessages[i];
+        console.log('ID: ' + message.id);
+        console.log('Subject: ' + message.subject);
+        console.log('Data: ' + message.data);
+    }
+</script>
+{% endblock %}

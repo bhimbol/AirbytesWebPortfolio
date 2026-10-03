@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Product Details{% endblock %}
+{% block content %}
+     <div class="container mt-4">
+        <h1 class="mt-4 mb-4">Product Details</h1>
+
+        {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+            </div>
+        {% else %}
+            <div class="mb-3">
+                <input type="text" id="searchInput" class="form-control custom-search-box" placeholder="Search by code or description">
+                <button class="btn btn-primary" id="searchButton">Search</button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped custom-table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th class="p-2">SKU</th>
+                            <th class="p-2">DESCRIPTION</th>
+                            <th class="p-2 bg-warning">BARCODE IN PCS</th>
+                            <th class="p-2">BARCODE IN IB CS</th>
+                            <th class="p-2">BARCODE IN CS</th>
+                            <th class="p-2">QUANTITY PCS per CS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list">
+                        {% for product in products_list %}
+                            {% if product.sku|length > 5 %}
+                                <tr>
+                                    <td class="p-2">{{ product.sku }}</td>
+                                    <td class="p-2">{{ product.description }}</td>
+                                    <td class="p-2">{{ product.bcpcs | safe }}</td>
+                                    <td class="p-2">{{ product.bcib | safe }}</td>
+                                    <td class="p-2">{{ product.bccs | safe }}</td>
+                                    <td class="p-2">{{ product.qtyperpcs }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item"><a class="page-link prev" href="#">Previous</a></li>
+                    <li class="page-item"><a class="page-link next" href="#">Next</a></li>
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+    <script>
+        $(document).ready(function () {
+            var currentPage = 1;
+            var productsPerPage = 10;  // Adjust the number of products per page
+
+            function showPage(page) {
+                var startIndex = (page - 1) * productsPerPage;
+                var endIndex = startIndex + productsPerPage;
+
+                $("#product-list tr").hide().slice(startIndex, endIndex).show();
+            }
+
+            $('.prev').on('click', function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+
+            $('.next').on('click', function () {
+                if (currentPage * productsPerPage < $("#product-list tr").length) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            });
+
+            showPage(currentPage);
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#searchButton").click(function () {
+                filterTable();
+            });
+
+            $("#searchInput").on("input", function () {
+                filterTable();
+            });
+
+            function filterTable() {
+                var input, filter, table, tr, td, i, txtValue;
+                input = $("#searchInput");
+                filter = input.val().toUpperCase();
+                table = $("#product-list");
+                tr = table.find("tr");
+
+                tr.each(function () {
+                    var found = false;
+                    $(this).find("td:lt(3)").each(function () {  // Search only in the first two columns (index 0 and 1)
+                        txtValue = $(this).text();
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            found = true;
+                            return false;  // Break the loop
+                        }
+                    });
+                    $(this).css("display", found ? "" : "none");
+                });
+            }
+        });
+    </script>
+    <style>
+        .custom-search-box {
+            background-color: #f8f9fa; /* Light gray background */
+            border: 1px solid #cefeda; /* Border color */
+            border-radius: 5px; /* Rounded corners */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Shadow for a subtle lift */
+        }
+    </style>
+        <style>
+        .custom-table {
+            font-size: 14px; /* Adjust the font size as needed */
+        }
+    </style>
+{% endblock %}

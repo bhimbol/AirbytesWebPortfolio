@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}DELIVERY MONITORING - WORK FAST BHIM{% endblock %}
+
+{% block header %}DELIVERY MONITORING{% endblock %}
+
+{% block content %}
+    <h1>Invoices Count</h1>
+    {% if invoices %}
+        <ul>{{ invoice_count }}</ul>
+    {% endif %}
+
+    <h1>Upload Invoices</h1>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form id="uploadForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="fileInput">Select a file:</label>
+        <input type="file" id="fileInput" name="file" style="display: none;">
+        <button type="button" onclick="document.getElementById('fileInput').click();">Browse</button>
+        <button type="submit">Upload</button>
+    </form>
+
+    <div><a href="{% url 'delivery_monitoring:delivery_planning' %}">Create Delivery Plan</a></div>
+
+    <h1>All Invoices</h1>
+
+    <table id="invoiceTable" class="display">
+        <thead>
+            <tr>
+                <th>Number</th>
+                <th>SI</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Customer Number</th>
+                <th>Customer Name</th>
+                <th>Dispatch Date</th>
+                <th>Delivery Date</th>
+                <th>Accountable</th>
+                <th>Remarks</th>
+            </tr>
+            <tr>
+                <th><select id="filterNumber" disabled><option value="">All</option></select></th>
+                <th><select id="filterSI" disabled><option value="">All</option></select></th>
+                <th><select id="filterDate"><option value="">All</option></select></th>
+                <th><select id="filterAmount" disabled><option value="">All</option></select></th>
+                <th><select id="filterCustomerNumber"><option value="">All</option></select></th>
+                <th><select id="filterCustomerName"><option value="">All</option></select></th>
+                <th><select id="filterDispatchDate"><option value="">All</option></select></th>
+                <th><select id="filterDeliveryDate"><option value="">All</option></select></th>
+                <th><select id="filterAccountable"><option value="">All</option></select></th>
+                <th><select id="filterRemarks"><option value="">All</option></select></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td>{{ invoice.number }}</td>
+                <td>{{ invoice.si }}</td>
+                <td>{{ invoice.date }}</td>
+                <td>{{ invoice.amount }}</td>
+                <td>{{ invoice.customer_number }}</td>
+                <td>{{ invoice.customer_name|escapejs }}</td>
+                <td>{{ invoice.dispatch_date }}</td>
+                <td>{{ invoice.delivery_date }}</td>
+                <td>{{ invoice.accountable }}</td>
+                <td>{{ invoice.remarks }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <style>
+        #invoiceTable_wrapper {
+            margin-top: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var table = $('#invoiceTable').DataTable({
+                "lengthMenu": [[5, 10, 25, -1], [5, 10, 25, "All"]],
+                "paging": true
+            });
+
+            // Initialize sorting order
+            var sortingOrder = {};
+
+            $('#invoiceTable thead').on('click', 'th', function() {
+                var columnIndex = $(this).index();
+                if (table.settings()[0].aoColumns[columnIndex].bSortable) {
+                    sortingOrder[columnIndex] = sortingOrder[columnIndex] === 'asc' ? 'desc' : 'asc';
+                    table.order([columnIndex, sortingOrder[columnIndex]]).draw();
+                }
+            });
+
+            // Function to filter table rows based on select box values
+            function filterTable() {
+                table.columns().eq(0).each(function(colIdx) {
+                    var filterValue = $('#invoiceTable thead select').eq(colIdx).val();
+                    if (filterValue) {
+                        table.column(colIdx).search('^' + filterValue + '$', true, false).draw();
+                    } else {
+                        table.column(colIdx).search('').draw();
+                    }
+                });
+            }
+
+            $('#invoiceTable thead select').on('change', filterTable);
+
+            // Populate filter options
+            function populateFilters() {
+                table.columns().eq(0).each(function(colIdx) {
+                    var select = $('#invoiceTable thead select').eq(colIdx);
+                    table.column(colIdx).data().unique().sort().each(function(d) {
+                        if (select.find('option[value="' + d + '"]').length === 0) {
+                            select.append('<option value="' + d + '">' + d + '</option>');
+                        }
+                    });
+                });
+            }
+
+            populateFilters();
+        });
+    </script>
+{% endblock %}

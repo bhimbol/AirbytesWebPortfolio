@@ -1,0 +1,136 @@
+<!-- Inside your HTML template -->
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}About This Website{% endblock %}
+{% block content %}
+{% if google_authenticated %}
+    <div class="container">
+        <form method="post" action="{% url 'asn' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">View ASN</button>
+        </form>
+
+        <h2>Messages</h2>
+        {% if messages %}
+        <p>Count: {{messages_count}}</p>
+        {%endif%}
+        <form method="post" action="{% url 'asn' %}">
+            {% csrf_token %}
+            <label for="search_subject">Search Subject:</label>
+            <input type="text" name="search_subject" id="search_subject" oninput="filterMessages()">
+            <button type="submit" style="display: none;">Search</button>
+        </form>
+        <form method="post" action="{% url 'download_selected_attachments' %}">
+            {% csrf_token %}
+            <button type="button" id="checkAll">Check All</button>
+            <button type="button" id="uncheckAll">Uncheck All</button>
+            <br>
+            <div id="messagesContainer">
+                {% for message in messages %}
+                    <div class="message-container" data-subject="{{ message.subject|lower }}">
+                        <input type="checkbox" name="selected_messages" class="message-checkbox" value="{{ message }}">
+                        <strong>Subject:</strong> {{ message.subject }}<br>
+                        <hr>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="submit">Download Selected Attachments</button>
+        </form>
+
+        {% if to_download_list %}
+            <p>{{to_download_list}}</p>
+        {% endif %}
+    </div>
+
+<!-- Inside your HTML template -->
+<!-- ... (previous HTML code) ... -->
+
+<script>
+    document.getElementById('checkAll').addEventListener('click', function () {
+        var checkboxes = document.querySelectorAll('.message-checkbox');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = true;
+        });
+    });
+
+    document.getElementById('uncheckAll').addEventListener('click', function () {
+        var checkboxes = document.querySelectorAll('.message-checkbox');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+        });
+    });
+
+    function filterMessages() {
+        var searchInput = document.getElementById('search_subject');
+        var messagesContainer = document.getElementById('messagesContainer');
+        var searchTerm = searchInput.value.toLowerCase();
+
+        var messageContainers = messagesContainer.getElementsByClassName('message-container');
+
+        for (var i = 0; i < messageContainers.length; i++) {
+            var subject = messageContainers[i].getAttribute('data-subject');
+
+            if (subject.includes(searchTerm)) {
+                messageContainers[i].style.display = 'block';
+            } else {
+                messageContainers[i].style.display = 'none';
+            }
+        }
+    }
+</script>
+
+<!-- ... (remaining HTML code) ... -->
+
+
+    <style>
+        /* Add your styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .message-container {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .message-checkbox {
+            margin-right: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+{% else %}
+    <div class="container">
+        <a href="{% url 'initiate_google_auth' %}" class="login-link">Sign in with Gmail</a>
+    </div>
+{% endif %}
+{% endblock %}

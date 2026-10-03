@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}IMAGE PROCESSOR - WORK FAST BHIM{% endblock %}
+
+{% block header %}IMAGE PROCESSOR{% endblock %}
+
+{% block content %}
+    <form method="post" action="{% url 'image_processor:image_processor_dashboard' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="fileProductDetails">Image Files Upload</label>
+        </br>
+        <input type="file" id="image_file" name="image_file" accept=".png">
+        <br>
+        <button type="submit">Process</button>
+    </form>
+{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

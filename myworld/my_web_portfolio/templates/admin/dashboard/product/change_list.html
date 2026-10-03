@@ -1,0 +1,111 @@
+{% extends "admin/change_list.html" %}
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+    #barcode-scanner {
+        width: 100%;
+        height: 100vh; /* Use 100% of the viewport height */
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+    }
+
+    #myModal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 94%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 20px;
+        box-shadow: 0 0 10px 5px #00ff00;
+        border-radius: 0; /* No border-radius for fullscreen */
+    }
+
+    .modal-content {
+        background-color: #ffffff;
+        padding: 10px;
+        border: 2px solid #00ff00;
+        width: 100%;
+        box-shadow: 0 0 10px 2px #00ff00;
+        border-radius: 0; /* No border-radius for fullscreen */
+    }
+</style>
+{% endblock %}
+
+{% block object-tools %}
+  {{ block.super }}
+
+    <button type="button" class="button" onclick="openPopup();">Scan Barcode</button>
+    <div id="myModal">
+        <div class="modal-content">
+            <span onclick="closePopup();" class="close">&times;</span>
+            <div id="barcode-scanner"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script>
+        function initQuagga() {
+            Quagga.init({
+                inputStream: {
+                    name: 'Live',
+                    type: 'LiveStream',
+                    target: document.querySelector('#barcode-scanner'),
+                    constraints: {
+                        width: 600,
+                        height: 372
+                    },
+                },
+                decoder: {
+                        readers: ["ean_reader"]
+                    },
+                locator: {
+                          halfSample: true,
+                          patchSize: "medium", // x-small, small, medium, large, x-large
+                          debug: {
+                            showCanvas: true,
+                            showPatches: false,
+                            showFoundPatches: false,
+                            showSkeleton: false,
+                            showLabels: false,
+                            showPatchLabels: false,
+                            showRemainingPatchLabels: false,
+                            boxFromPatches: {
+                              showTransformed: true,
+                              showTransformedBox: true,
+                              showBB: false
+                            }
+                          }
+                        },
+            }, function (err) {
+                if (err) {
+                    console.error(err);
+                    displayErrorMessageBox('Error initializing Quagga. Please make sure your camera is accessible.');
+                    return;
+                }
+                Quagga.onDetected(handleBarcode);
+                Quagga.start();
+            });
+        }
+        function displayErrorMessageBox(message) {
+            alert(message);
+        }
+        function handleBarcode(result) {
+            var barcodeValue = result.codeResult.code;
+            document.querySelector('#searchbox').value = barcodeValue;
+            console.log('Scanned Barcode:', barcodeValue);
+            closePopup();
+        }
+        function openPopup() {
+            document.getElementById('myModal').style.display = 'block';
+            initQuagga();
+        }
+        function closePopup() {
+            document.getElementById('myModal').style.display = 'none';
+            Quagga.stop();
+        }
+    </script>
+{% endblock %}
+

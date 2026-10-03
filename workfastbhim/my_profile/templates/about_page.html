@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}ABOUT PAGE - WORK FAST BHIM{% endblock %}
+
+{% block header %}ABOUT PAGE{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mt-4 mb-4">About This Website</h1>
+
+        <p>
+            Welcome! This site was crafted with passion and powered by Python Django.
+            This site is currently in the development stage and will continue to evolve as my skills improve through practice.
+            Here's a glimpse into how it came to life:
+        </p>
+
+        <h3>Technology Stack:</h3>
+        <ul class="list-group">
+            <li class="list-group-item"><strong>Backend:</strong> Python Django</li>
+            <li class="list-group-item"><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
+        </ul>
+
+        <h3>Key Features:</h3>
+
+        <ol class="list-group">
+            <li class="list-group-item">
+                <strong>Commenting Section:</strong>
+                <ul>
+                    <li>Implemented a commenting system using Django models.</li>
+                    <li>Users can engage in discussions and share their thoughts.</li>
+                </ul>
+            </li>
+            <li class="list-group-item">
+                <strong>Photo Gallery:</strong>
+                <ul>
+                    <li>Created an interactive gallery using JavaScript and CSS.</li>
+                    <li>Explore a collection of images seamlessly.</li>
+                </ul>
+            </li>
+            <li class="list-group-item">
+                <strong>Lightbox2 Popup:</strong>
+                <ul>
+                    <li>Enhanced user experience with the Lightbox2 popup.</li>
+                    <li>Enjoy interactive and visually appealing images throughout the site.</li>
+                </ul>
+            </li>
+            <li class="list-group-item">
+                <strong>SMS Sending and Receiving:</strong>
+                <ol>
+                    <li>
+                        I implemented an SMS sending and receiving feature for this site using Twilio. However, I haven't found a practical application for it yet.
+                        Feel free to test it if you'd like.
+                    </li>
+                    <li>
+                        To test it:
+                        <ol type="a">
+                            <li>Click "Tools", Click "SMS"  at the top.</li>
+                            <li>Send a text message to the displayed number.</li>
+                            <li>Your message will be shown on this page after sending.</li>
+                        </ol>
+                    </li>
+                    <li>
+                        As for sending SMS, I may not have enough balance in my Twilio account, so unfortunately, you can't test it now.
+                        It worked when I was developing it using a free account. LoL.
+                    </li>
+                </ol>
+            </li>
+        </ol>
+
+        <h3>Behind the Scenes:</h3>
+        <ul class="list-group">
+            <li class="list-group-item">Leveraged Django models for efficient data management.</li>
+            <li class="list-group-item">Customized JavaScript for dynamic and responsive user interactions.</li>
+            <li class="list-group-item">Crafted a visually pleasing layout with CSS for a seamless user experience.</li>
+        </ul>
+
+        <p class="mt-4">Feel free to explore and interact with the various features on My Web Portfolio. Thank you for being part of our online community!</p>
+    </div>
+{% endblock %}
+
+
+{% block extra_css %}
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Comments Section{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mt-4 mb-4">Let's have some talk.</h1>
+        <div class="comments">
+            {% for comment in comments_list %}
+                <div class="comment border p-3 mb-3">
+                    <p>{{ comment.text }}</p>
+                    <span class="timestamp">{{ comment.timestamp }}</span>
+                </div>
+            {% endfor %}
+            <form method="post" action="{% url 'comments' %}" class="mb-4">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    {{ form.text.label_tag }}
+                    {{ form.text }}
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Comment</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
