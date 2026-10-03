@@ -31,6 +31,7 @@ staticfiles/
 credentials.json
 token.json
 client_secret*.json
+keyMe.json
 
 # =========================
 # PythonAnywhere / Linux user files
@@ -57,5 +58,4 @@ client_secret*.json
 # =========================
 # Logs
 # =========================
-keyMe,json
 *.log
